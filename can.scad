@@ -1,15 +1,17 @@
 // Inside diameter
 socket_diameter = 28;
+socket_radius = socket_diameter / 2;
 // Inside height
 socket_height = 20;
 
-// Outside diameter
-cone_diameter = 95;
-// Outside height
+// Outside
 cone_height = 33;
+//total_height = 53;
+//cone_height = total_height - socket_height;
 
 // Outside diameter
 trim_diameter = 150;
+trim_radius = trim_diameter / 2;
 
 // Outer width of mounting tab
 mount_width = 10;
@@ -23,13 +25,90 @@ wall_thickness = 2;
 wall_half = wall_thickness / 2;
 wall_double = wall_thickness * 2;
 
+// Outside diameter
+cone_diameter = mount_separation - mount_hole - mount_width; //95;
+cone_radius = cone_diameter / 2;
+cone_angle = atan((cone_height + wall_thickness) / (cone_radius - socket_radius));
+echo(cone_angle);
+
+section_view = true;
+sqrt2 = sqrt(2);
 $fa = $preview ? 15 : 1;
 $fs = $preview ? 3 : 1;
 
+// soh | sin(a) = opp / hyp
+// cah | cos(a) = adj / hyp
+// toa | tan(a) = opp / adj
+/*
+rotate(cone_angle, [0,0,1])
+square(10);
+*/
 
-body();
-//mount();
+/*
+difference() {
+	body();
+	//mount();
+	if ($preview && section_view) {
+		translate([0, 0, -1])
+			cube([cone_diameter, cone_diameter, cone_diameter]);
+	}
+}
+*/
+difference() {
+	rotate_extrude(angle=360, convexity=10)
+		outline_points();
+	translate([0, 0, socket_height + cone_height])
+		mount_holes();
+}
 
+module outline_points() {
+	a = cone_angle / 2;
+	hyp = wall_thickness / cos(a);
+	polygon([
+		[0, 0],
+		[socket_radius, 0], // __|
+		[
+			socket_radius, // /
+			socket_height  // |
+		],
+		[
+			cone_radius,                                 //  __
+			socket_height + cone_height + wall_thickness // /
+		],
+		[
+			trim_radius - wall_double,                   // __
+			socket_height + cone_height + wall_thickness //   \
+		],
+		[
+			trim_radius,
+			socket_height + cone_height - wall_thickness // __\
+		],
+		[
+			trim_radius - wall_thickness*sqrt2,
+			socket_height + cone_height - wall_thickness // \__
+		],
+		[
+			trim_radius - wall_thickness-wall_thickness*sqrt2, // __
+			socket_height + cone_height                        //   \
+		],
+		[
+			cone_radius + hyp*sin(a),   //   __
+			socket_height + cone_height //  /
+		],
+		[
+			socket_radius + wall_thickness,             // /
+			socket_height - wall_thickness + hyp*sin(a) // |
+		],
+		[
+			socket_radius + wall_thickness, // __|
+			-wall_thickness
+		],
+		[
+			0,
+			-wall_thickness // |__
+		],
+	]);
+}
 
 module mount(wall = 0) {
 	y = mount_width + wall*2;
