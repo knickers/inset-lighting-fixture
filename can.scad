@@ -50,7 +50,7 @@ difference() {
 	//mount();
 	if ($preview && section_view) {
 		translate([0, 0, -1])
-			cube([cone_diameter, cone_diameter, cone_diameter]);
+			cube(trim_diameter);
 	}
 }
 */
@@ -59,6 +59,10 @@ difference() {
 		outline_points();
 	translate([0, 0, socket_height + cone_height])
 		mount_holes();
+	if ($preview && section_view) {
+		translate([0, 0, -wall_thickness-1])
+			cube(trim_diameter);
+	}
 }
 
 module outline_points() {
@@ -127,20 +131,12 @@ module mounts(wall = 0) {
 
 module mount_holes() {
 	translate([mount_separation/2, 0, 0])
-		cylinder(d1=mount_hole, d2=mount_hole+wall_thickness*2, h=wall_thickness);
+		cylinder(d1=mount_hole, d2=mount_hole+wall_double, h=wall_thickness);
 		//cylinder(d=mount_hole, h=wall_thickness+1);
 	rotate(180, [0,0,1])
 		translate([mount_separation/2, 0, 0])
-			cylinder(d1=mount_hole, d2=mount_hole+wall_thickness*2, h=wall_thickness);
+			cylinder(d1=mount_hole, d2=mount_hole+wall_double, h=wall_thickness);
 			//cylinder(d=mount_hole, h=wall_thickness+1);
-}
-
-module mount_counter_sinks() {
-	translate([mount_separation/2, 0, 0])
-		cylinder(d1=mount_hole, d2=mount_hole+wall_thickness*2, h=wall_thickness);
-	rotate(180, [0,0,1])
-		translate([mount_separation/2, 0, 0])
-			cylinder(d1=mount_hole, d2=mount_hole+wall_thickness*2, h=wall_thickness);
 }
 
 module body() {
@@ -192,7 +188,6 @@ module body() {
 			mounts();
 			translate([0, 0, cone_height]) {
 				mount_holes();
-				//mount_counter_sinks();
 			}
 		}
 
